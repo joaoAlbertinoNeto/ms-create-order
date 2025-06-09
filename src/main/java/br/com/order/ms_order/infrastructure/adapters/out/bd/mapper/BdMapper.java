@@ -3,8 +3,6 @@ package br.com.order.ms_order.infrastructure.adapters.out.bd.mapper;
 import br.com.order.ms_order.domain.dto.OrderCreatedDTO;
 import br.com.order.ms_order.domain.dto.OrderDTO;
 import br.com.order.ms_order.infrastructure.adapters.out.bd.dto.OrderEntityDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;

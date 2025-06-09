@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
 @Slf4j
-@Component
+@Component("CreateOrderEventOutImpl")
 public class CreateOrderEventOutImpl implements CreateOrderPortOut {
 
     private final KafkaTemplate<String , String> kafkaTemplate;

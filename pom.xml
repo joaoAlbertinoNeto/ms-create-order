@@ -9,9 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.order</groupId>
-	<artifactId>ms-order</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>ms-order</name>
+	<artifactId>ms_order</artifactId>
+	<version>0.0.1</version>
+	<packaging>jar</packaging>
+	<name>ms_order</name>
 	<description>ms to create order</description>
 	<url/>
 	<licenses>
