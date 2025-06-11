@@ -5,14 +5,17 @@ import br.com.order.ms_order.domain.dto.OrderCreatedDTO;
 import br.com.order.ms_order.domain.dto.OrderDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-@Service
+@Component("OrderServiceImpl")
 public class OrderServiceImpl implements OrderService{
     private final CreateOrderPortOut createOrderPortOutBd;
 
+    @Autowired
     public OrderServiceImpl(@Qualifier("OrderBdImpl") CreateOrderPortOut createOrderPortOutBd) {
         this.createOrderPortOutBd = createOrderPortOutBd;
     }
@@ -20,7 +23,9 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public OrderCreatedDTO createOrder(OrderDTO orderDTO) {
         try {
+            log.info("[SERVICE_BD] - Creating order with code: {}", orderDTO.getCode());
             return createOrderPortOutBd.createOrder(orderDTO);
+
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

@@ -8,6 +8,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderRepository extends MongoRepository<OrderEntityDTO,Long> {
+public interface OrderRepository extends MongoRepository<OrderEntityDTO,String> {
     public List<OrderEntityDTO> findByStatus(String status);
 }

@@ -22,6 +22,7 @@ public class OrderBdImpl implements CreateOrderPortOut {
     public OrderCreatedDTO createOrder(OrderDTO orderDTO) throws JsonProcessingException {
         try{
             var saved = orderRepository.save(mapper.mapToEntity(orderDTO));
+            log.info("Saved order to database: {}", orderDTO.getCode());
             return mapper.mapFromEntity(saved);
         }catch (Exception e){
             log.error("Error to save : {}",e.getLocalizedMessage());

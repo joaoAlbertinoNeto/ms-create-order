@@ -2,6 +2,7 @@ package br.com.order.ms_order.infrastructure.adapters.out.kafka.mapper;
 
 import br.com.order.ms_order.domain.dto.OrderCreatedDTO;
 import br.com.order.ms_order.domain.dto.OrderDTO;
+import br.com.order.ms_order.infrastructure.adapters.out.bd.dto.OrderEntityDTO;
 import br.com.order.ms_order.infrastructure.adapters.out.kafka.dto.OrderEventDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,10 +24,11 @@ public class EventMapper {
         return orderEvent;
     }
 
-    public String mapToStringEvent(OrderEventDTO orderDTO) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.writeValueAsString(orderDTO);
+    public String mapToStringEvent(OrderEventDTO orderEventDTO) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+        return objectMapper.writeValueAsString(orderEventDTO);
     }
+
 
     public OrderCreatedDTO mapFromEvent(OrderEventDTO orderEventDTO){
         var orderEvent = new OrderCreatedDTO();

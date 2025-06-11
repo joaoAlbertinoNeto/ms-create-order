@@ -23,7 +23,7 @@ class OrderServiceEventImplTest {
     @BeforeEach
     void setUp() {
         createOrderPortOut = mock(CreateOrderPortOut.class);
-        orderServiceEventImpl = new OrderServiceEventImpl(createOrderPortOut,orderRepository);
+        //orderServiceEventImpl = new OrderServiceEventImpl(createOrderPortOut,orderRepository);
     }
 
     /*  @SneakyThrows

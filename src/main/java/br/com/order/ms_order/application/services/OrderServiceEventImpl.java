@@ -1,42 +1,52 @@
 package br.com.order.ms_order.application.services;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import br.com.order.ms_order.application.ports.out.CreateOrderPortOut;
 import br.com.order.ms_order.domain.dto.OrderCreatedDTO;
 import br.com.order.ms_order.domain.dto.OrderDTO;
 import br.com.order.ms_order.infrastructure.adapters.out.bd.repository.OrderRepository;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
-public class OrderServiceEventImpl implements OrderService {
+public class OrderServiceEventImpl {
 
-    private final CreateOrderPortOut createOrderPortOutEvt;
-    private final OrderRepository orderRepository;
+    private CreateOrderPortOut createOrderPortOutEvt;
+    private OrderRepository orderRepository;
+    private ModelMapper modelMapper;
+    
 
+    @Autowired
     public OrderServiceEventImpl(@Qualifier("CreateOrderEventOutImpl")CreateOrderPortOut createOrderPortOutEvt , 
-                                 OrderRepository orderRepository) {
+                                 OrderRepository orderRepository,
+                                 ModelMapper modelMapper) {
         this.createOrderPortOutEvt = createOrderPortOutEvt;
-        this.orderRepository = orderRepository;
+        this.orderRepository = orderRepository; 
+        this.modelMapper = modelMapper;
     }
 
-    @Scheduled(fixedDelay = 2000)
-    @Override
-    public OrderCreatedDTO createOrder(OrderDTO orderDTO) {
+    @Scheduled(fixedDelay = 5000)
+    public void createOrder() {
         try {
-            var listOrders = orderRepository.findByCustomerByStatus("PENDING");
+            var listOrders = orderRepository.findByStatus("PENDING");
             if (listOrders.isEmpty()) {
-                throw new RuntimeException("No pending orders found for the customer.");
+                log.info("No pending orders to process.");
+                return;
             }
 
-            for (var order : listOrders) {
+            for (var orderEntity : listOrders) {
                 // Process each order as needed, e.g., log or update status
-                System.out.println("Processing order: " + order.getId());
-                createOrderPortOutEvt.createOrder(orderDTO);
+                log.info("Processing order: " + orderEntity.getId());
+                createOrderPortOutEvt.createOrder(modelMapper.map(orderEntity , OrderDTO.class));
+                orderEntity.setStatus("SENT_TO_PROCESSING");
+                orderRepository.save(orderEntity);
             }
-            return null;
+            return;
         } catch (Exception e) {
             // Handle the exception appropriately, e.g., log it or rethrow it
             throw new RuntimeException("Error creating order: " + e.getMessage(), e);
