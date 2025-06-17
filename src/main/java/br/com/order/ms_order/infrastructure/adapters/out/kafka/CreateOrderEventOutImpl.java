@@ -42,4 +42,9 @@ public class CreateOrderEventOutImpl implements CreateOrderPortOut {
             throw e;
         }
     }
+
+    @Override
+    public OrderCreatedDTO getByOrderId(String id) throws Exception {
+        throw new UnsupportedOperationException("getByOrderId is not supported in Kafka implementation. Use OrderBdImpl instead.");
+    }
 }

@@ -6,4 +6,5 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public interface CreateOrderPortOut {
     OrderCreatedDTO createOrder (OrderDTO orderDTO) throws JsonProcessingException;
+    OrderCreatedDTO getByOrderId(String id) throws Exception;
 }

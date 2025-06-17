@@ -5,4 +5,5 @@ import br.com.order.ms_order.domain.dto.OrderDTO;
 
 public interface OrderService {
     OrderCreatedDTO createOrder (OrderDTO orderDTO);
+    OrderCreatedDTO getByOrderId(String id);
 }

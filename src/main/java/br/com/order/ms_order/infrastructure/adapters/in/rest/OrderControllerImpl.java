@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
 @RequestMapping("/order")
@@ -20,6 +21,18 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     public ResponseEntity<OrderCreatedDTO> createOrder(OrderDTO dto) {
-        return ResponseEntity.ok(service.createOrder(dto));
+        OrderCreatedDTO createdOrder = service.createOrder(dto);
+        String orderLink = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(createdOrder.getId())
+            .toUriString();
+        createdOrder.setOrderLink(orderLink);
+        return ResponseEntity.ok(createdOrder);
+    }
+
+    @Override
+    public ResponseEntity<OrderCreatedDTO> getByOrderId(String id) {
+        return ResponseEntity.ok(service.getByOrderId(id));
     }
 }

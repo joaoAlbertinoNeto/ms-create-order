@@ -30,4 +30,15 @@ public class OrderServiceImpl implements OrderService{
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public OrderCreatedDTO getByOrderId(String id) {
+        try {
+            log.info("[SERVICE_BD] - Getting order with id: {}", id);
+            return createOrderPortOutBd.getByOrderId(id);
+        } catch (Exception e) {
+            log.error("[SERVICE_BD] - Error getting order: {}", e.getMessage());
+            throw new RuntimeException("Error getting order: " + e.getMessage(), e);
+        }
+    }
 }

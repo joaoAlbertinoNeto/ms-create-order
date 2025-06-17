@@ -14,4 +14,5 @@ public class OrderCreatedDTO {
     private String customerTelephoneNumber;
     private String status;
     private LocalDateTime createdAt;
+    private String orderLink;
 }

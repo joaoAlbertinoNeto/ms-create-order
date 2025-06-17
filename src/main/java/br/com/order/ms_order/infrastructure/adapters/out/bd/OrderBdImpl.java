@@ -29,4 +29,17 @@ public class OrderBdImpl implements CreateOrderPortOut {
             throw e;
         }
     }
+
+    @Override
+    public OrderCreatedDTO getByOrderId(String id) throws Exception {
+        try {
+            var order = orderRepository.findById(id)
+                .orElseThrow(() -> new Exception("Order not found with id: " + id));
+            log.info("Found order in database: {}", order.getCode());
+            return mapper.mapFromEntity(order);
+        } catch (Exception e) {
+            log.error("Error getting order: {}", e.getLocalizedMessage());
+            throw e;
+        }
+    }
 }
