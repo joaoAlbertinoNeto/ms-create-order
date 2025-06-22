@@ -23,7 +23,7 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public OrderCreatedDTO createOrder(OrderDTO orderDTO) {
         try {
-            log.info("[SERVICE_BD] - Creating order with code: {}", orderDTO.getCode());
+            log.info("[SERVICE-BD] - Creating order with code: {}", orderDTO.getCode());
             return createOrderPortOutBd.createOrder(orderDTO);
 
         } catch (JsonProcessingException e) {
@@ -34,10 +34,10 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public OrderCreatedDTO getByOrderId(String id) {
         try {
-            log.info("[SERVICE_BD] - Getting order with id: {}", id);
+            log.info("[SERVICE-BD] - Getting order with id: {}", id);
             return createOrderPortOutBd.getByOrderId(id);
         } catch (Exception e) {
-            log.error("[SERVICE_BD] - Error getting order: {}", e.getMessage());
+            log.error("[SERVICE-BD] - Error getting order: {}", e.getMessage());
             throw new RuntimeException("Error getting order: " + e.getMessage(), e);
         }
     }
