@@ -24,7 +24,21 @@ Para usar esta aplicação, você precisa de um servidor OAuth2. Recomendamos o 
 docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin quay.io/keycloak/keycloak:latest start-dev
 ```
 
-#### Configuração do Realm:
+#### Configuração Automática:
+
+Execute o script de configuração:
+
+```bash
+./setup-keycloak.sh
+```
+
+Este script irá:
+- Criar o realm "ms-order"
+- Criar o client "ms-order-client" com scopes "read" e "write"
+- Criar roles "USER" e "ADMIN"
+- Criar um usuário de teste "testuser" com senha "password123"
+
+#### Configuração Manual do Realm:
 
 1. Acesse http://localhost:8080
 2. Faça login com admin/admin
@@ -32,9 +46,10 @@ docker run -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin
 4. Crie um novo client:
    - Client ID: `ms-order-client`
    - Client Protocol: `openid-connect`
-   - Access Type: `public`
-   - Valid Redirect URIs: `http://localhost:8080/*`
-   - Web Origins: `http://localhost:8080`
+   - Access Type: `confidential`
+   - Valid Redirect URIs: `http://localhost:8081/*`
+   - Web Origins: `http://localhost:8081`
+   - Default Client Scopes: `openid`, `profile`, `email`, `read`, `write`
 
 #### Criação de Usuários e Roles:
 
@@ -49,14 +64,15 @@ Atualize o `application.properties` com as URLs corretas do seu servidor OAuth2:
 # OAuth2 Resource Server Configuration
 spring.security.oauth2.resourceserver.jwt.issuer-uri=http://localhost:8080/realms/ms-order
 spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8080/realms/ms-order/protocol/openid-connect/certs
+spring.security.oauth2.resourceserver.jwt.client-id=ms-order-client
 ```
 
 ### 3. Endpoints Protegidos
 
 Os seguintes endpoints agora requerem autenticação OAuth2:
 
-- `POST /order/create` - Criar novo pedido
-- `GET /order/{id}` - Buscar pedido por ID
+- `POST /order/create` - Criar novo pedido (requer SCOPE_write ou ROLE_USER/ADMIN)
+- `GET /order/{id}` - Buscar pedido por ID (requer SCOPE_read ou ROLE_USER/ADMIN)
 
 ### 4. Endpoints Públicos
 
@@ -77,14 +93,14 @@ curl -X POST http://localhost:8080/realms/ms-order/protocol/openid-connect/token
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
   -d "client_id=ms-order-client" \
-  -d "username=seu_usuario" \
-  -d "password=sua_senha"
+  -d "username=testuser" \
+  -d "password=password123"
 ```
 
 ### 2. Usar a API com Token
 
 ```bash
-curl -X POST http://localhost:8080/order/create \
+curl -X POST http://localhost:8081/order/create \
   -H "Authorization: Bearer SEU_TOKEN_AQUI" \
   -H "Content-Type: application/json" \
   -d '{
@@ -96,14 +112,62 @@ curl -X POST http://localhost:8080/order/create \
   }'
 ```
 
-### 3. Acessar a Documentação
+### 3. Teste Automático
 
-Acesse http://localhost:8080/swagger-ui.html para ver a documentação interativa da API com suporte a autenticação OAuth2.
+Execute o script de teste para verificar se tudo está funcionando:
 
-## Roles e Permissões
+```bash
+./test-token.sh
+```
 
-- `ROLE_USER`: Pode criar e visualizar pedidos
-- `ROLE_ADMIN`: Pode criar e visualizar pedidos (mesmas permissões do USER por enquanto)
+### 4. Acessar a Documentação
+
+Acesse http://localhost:8081/swagger-ui.html para ver a documentação interativa da API com suporte a autenticação OAuth2.
+
+## Scopes e Roles
+
+A aplicação suporta tanto scopes quanto roles:
+
+### Scopes:
+- `SCOPE_read`: Permissão para ler pedidos
+- `SCOPE_write`: Permissão para criar pedidos
+
+### Roles:
+- `ROLE_USER`: Usuário padrão (pode criar e visualizar pedidos)
+- `ROLE_ADMIN`: Administrador (pode criar e visualizar pedidos)
+
+## Troubleshooting
+
+### Erro 403 - Acesso Negado
+
+Se você está recebendo erro 403, verifique:
+
+1. **Token válido**: O token não expirou
+2. **Client ID correto**: O token foi gerado para o client correto
+3. **Scopes/Roles**: O usuário tem as permissões necessárias
+
+Para debugar, execute:
+
+```bash
+./test-token.sh
+```
+
+Este script irá:
+- Obter um token
+- Decodificar o JWT para mostrar os claims
+- Testar o endpoint
+- Mostrar a resposta completa
+
+### Erro de JWT Inválido
+
+- Verifique se o token não expirou
+- Confirme se o issuer URI está correto
+- Verifique se o client ID está correto
+
+### Erro de CORS
+
+- A configuração CORS já está incluída na `SecurityConfig`
+- Se necessário, ajuste as origens permitidas
 
 ## Desenvolvimento Local
 
@@ -164,19 +228,4 @@ curl http://localhost:8081/actuator/metrics/http.server.requests
 
 # Métricas Prometheus
 curl http://localhost:8081/actuator/prometheus
-```
-
-## Troubleshooting
-
-### Erro de JWT Inválido
-- Verifique se o token não expirou
-- Confirme se o issuer URI está correto
-- Verifique se o client ID está correto
-
-### Erro de Acesso Negado
-- Verifique se o usuário tem as roles necessárias
-- Confirme se as roles estão no formato correto (ROLE_USER, ROLE_ADMIN)
-
-### Erro de CORS
-- A configuração CORS já está incluída na `SecurityConfig`
-- Se necessário, ajuste as origens permitidas 
+``` 

@@ -48,15 +48,29 @@ curl -s -X POST http://localhost:8080/admin/realms/ms-order/clients \
   -d '{
     "clientId": "ms-order-client",
     "enabled": true,
-    "publicClient": true,
+    "publicClient": false,
     "standardFlowEnabled": true,
     "directAccessGrantsEnabled": true,
     "serviceAccountsEnabled": false,
     "redirectUris": ["http://localhost:8081/*"],
-    "webOrigins": ["http://localhost:8081"]
+    "webOrigins": ["http://localhost:8081"],
+    "defaultClientScopes": ["openid", "profile", "email", "read", "write"]
   }'
 
 echo "Client ms-order-client criado!"
+
+# Obtém o ID do client
+CLIENT_ID=$(curl -s http://localhost:8080/admin/realms/ms-order/clients?clientId=ms-order-client \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[0].id')
+
+# Adiciona os scopes read e write ao client
+echo "Adicionando scopes ao client..."
+curl -s -X PUT http://localhost:8080/admin/realms/ms-order/clients/$CLIENT_ID/default-client-scopes \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '["openid", "profile", "email", "read", "write"]'
+
+echo "Scopes adicionados ao client!"
 
 # Cria as roles
 echo "Criando roles..."

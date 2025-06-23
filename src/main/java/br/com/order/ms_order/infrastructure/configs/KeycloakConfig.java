@@ -13,15 +13,14 @@ public class KeycloakConfig {
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
 
-    @Bean
-    public JwtDecoder jwtDecoder() {
+   /* @Bean
+    public JwtDecoder jwtDecoders() {
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
-        
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
         OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer);
         
         jwtDecoder.setJwtValidator(withAudience);
         
         return jwtDecoder;
-    }
+    }*/
 } 

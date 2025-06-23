@@ -1,12 +1,12 @@
 package br.com.order.ms_order.infrastructure.adapters.in.rest;
 
+import br.com.order.ms_order.application.services.OrderService;
+import br.com.order.ms_order.domain.dto.OrderCreatedDTO;
 import br.com.order.ms_order.domain.dto.OrderDTO;
-import br.com.order.ms_order.infrastructure.adapters.out.bd.dto.OrderEntityDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -20,15 +20,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureWebMvc
+@WebMvcTest(OrderControllerImpl.class)
 class OrderControllerSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private OrderController orderController;
+    private OrderService orderService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -47,6 +46,9 @@ class OrderControllerSecurityTest {
     @WithMockUser(roles = "USER")
     void testCreateOrderWithUserRole_ShouldReturnOk() throws Exception {
         OrderDTO orderDTO = createTestOrderDTO();
+        OrderCreatedDTO createdOrder = createTestOrderCreatedDTO();
+        
+        when(orderService.createOrder(any(OrderDTO.class))).thenReturn(createdOrder);
 
         mockMvc.perform(post("/order/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -58,6 +60,9 @@ class OrderControllerSecurityTest {
     @WithMockUser(roles = "ADMIN")
     void testCreateOrderWithAdminRole_ShouldReturnOk() throws Exception {
         OrderDTO orderDTO = createTestOrderDTO();
+        OrderCreatedDTO createdOrder = createTestOrderCreatedDTO();
+        
+        when(orderService.createOrder(any(OrderDTO.class))).thenReturn(createdOrder);
 
         mockMvc.perform(post("/order/create")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -74,6 +79,10 @@ class OrderControllerSecurityTest {
     @Test
     @WithMockUser(roles = "USER")
     void testGetOrderWithUserRole_ShouldReturnOk() throws Exception {
+        OrderCreatedDTO createdOrder = createTestOrderCreatedDTO();
+        
+        when(orderService.getByOrderId("123")).thenReturn(createdOrder);
+
         mockMvc.perform(get("/order/123"))
                 .andExpect(status().isOk());
     }
@@ -92,5 +101,17 @@ class OrderControllerSecurityTest {
         orderDTO.setStatus("PENDING");
         orderDTO.setCreatedAt(LocalDateTime.now());
         return orderDTO;
+    }
+
+    private OrderCreatedDTO createTestOrderCreatedDTO() {
+        OrderCreatedDTO createdOrder = new OrderCreatedDTO();
+        createdOrder.setId("123");
+        createdOrder.setCode("TEST001");
+        createdOrder.setCustomerEmail("test@example.com");
+        createdOrder.setCustomerTelephoneNumber("11999999999");
+        createdOrder.setStatus("PENDING");
+        createdOrder.setCreatedAt(LocalDateTime.now());
+        createdOrder.setOrderLink("http://localhost:8081/order/123");
+        return createdOrder;
     }
 } 

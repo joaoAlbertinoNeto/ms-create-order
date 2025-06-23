@@ -26,7 +26,7 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     @Operation(summary = "Criar novo pedido", description = "Cria um novo pedido no sistema")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_write') or hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<OrderCreatedDTO> createOrder(OrderDTO dto) {
         OrderCreatedDTO createdOrder = service.createOrder(dto);
         String orderLink = ServletUriComponentsBuilder
@@ -40,7 +40,7 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     @Operation(summary = "Buscar pedido por ID", description = "Recupera um pedido específico pelo seu ID")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_read') or hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<OrderCreatedDTO> getByOrderId(String id) {
         return ResponseEntity.ok(service.getByOrderId(id));
     }
