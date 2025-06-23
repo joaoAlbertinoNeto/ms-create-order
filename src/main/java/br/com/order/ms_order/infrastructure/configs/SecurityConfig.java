@@ -52,7 +52,7 @@ public class SecurityConfig {
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
-                    //.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
                     .decoder(jwtDecoder())
                 )
             );
@@ -65,11 +65,9 @@ public class SecurityConfig {
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuerUri);
         
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
-        OAuth2TokenValidator<Jwt> withAudience = new JwtClaimValidator<String>("aud", aud -> aud.equals(clientId));
-        OAuth2TokenValidator<Jwt> withClientId = new JwtClaimValidator<String>("azp", azp -> azp.equals(clientId));
-        
+
         OAuth2TokenValidator<Jwt> combinedValidator = new DelegatingOAuth2TokenValidator<>(
-            withIssuer, withAudience, withClientId
+            withIssuer
         );
         
         jwtDecoder.setJwtValidator(combinedValidator);
@@ -80,7 +78,7 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        //jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new CustomJwtGrantedAuthoritiesConverter());
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new CustomJwtGrantedAuthoritiesConverter());
         return jwtAuthenticationConverter;
     }
 
@@ -90,15 +88,15 @@ public class SecurityConfig {
             Collection<GrantedAuthority> authorities = new ArrayList<>();
             
             // Extract scopes - handle both String and List<String> formats
-            if (jwt.hasClaim("scope")) {
-                Object scopeClaim = jwt.getClaim("scope");
+            if (jwt.hasClaim("client-scope")) {
+                Object scopeClaim = jwt.getClaim("client-scope");
                 if (scopeClaim instanceof String) {
                     String scope = (String) scopeClaim;
                     if (scope != null && !scope.trim().isEmpty()) {
                         String[] scopes = scope.split(" ");
                         for (String s : scopes) {
                             if (!s.trim().isEmpty()) {
-                                authorities.add(new SimpleGrantedAuthority("SCOPE_" + s.trim()));
+                                authorities.add(new SimpleGrantedAuthority(s.trim()));
                             }
                         }
                     }
@@ -107,7 +105,7 @@ public class SecurityConfig {
                     List<String> scopes = (List<String>) scopeClaim;
                     for (String scope : scopes) {
                         if (scope != null && !scope.trim().isEmpty()) {
-                            authorities.add(new SimpleGrantedAuthority("SCOPE_" + scope.trim()));
+                            authorities.add(new SimpleGrantedAuthority(scope.trim()));
                         }
                     }
                 }
