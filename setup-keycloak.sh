@@ -25,6 +25,8 @@ if [ "$ADMIN_TOKEN" = "null" ] || [ -z "$ADMIN_TOKEN" ]; then
     exit 1
 fi
 
+echo ADMIN_TOKEN: $ADMIN_TOKEN
+
 echo "Token de admin obtido com sucesso!"
 
 # Cria o realm ms-order
@@ -62,6 +64,10 @@ echo "Client ms-order-client criado!"
 # Obtém o ID do client
 CLIENT_ID=$(curl -s http://localhost:8080/admin/realms/ms-order/clients?clientId=ms-order-client \
   -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[0].id')
+
+CLIENT_SECRET=$(curl -s http://localhost:8080/admin/realms/ms-order/clients?clientId=ms-order-client \
+  -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[0].secret')
+
 
 # Adiciona os scopes read e write ao client
 echo "Adicionando scopes ao client..."
@@ -140,6 +146,7 @@ echo "curl -X POST http://localhost:8080/realms/ms-order/protocol/openid-connect
 echo "  -H \"Content-Type: application/x-www-form-urlencoded\" \\"
 echo "  -d \"grant_type=password\" \\"
 echo "  -d \"client_id=ms-order-client\" \\"
+echo "  -d \"client_secret=$CLIENT_SECRET\" \\"
 echo "  -d \"username=testuser\" \\"
 echo "  -d \"password=password123\""
 echo ""
