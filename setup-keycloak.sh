@@ -4,7 +4,7 @@ echo "Configurando Keycloak para MS Order..."
 
 # Aguarda o Keycloak estar disponível
 echo "Aguardando Keycloak estar disponível..."
-until curl -s http://localhost:8080 > /dev/null; do
+until curl -s http://localhost:33165> /dev/null; do
     echo "Aguardando Keycloak..."
     sleep 5
 done
@@ -13,7 +13,7 @@ echo "Keycloak está disponível!"
 
 # Obtém o token de admin
 echo "Obtendo token de admin..."
-ADMIN_TOKEN=$(curl -s -X POST http://localhost:8080/realms/master/protocol/openid-connect/token \
+ADMIN_TOKEN=$(curl -s -X POST http://localhost:33165/realms/master/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
   -d "client_id=admin-cli" \
@@ -31,7 +31,7 @@ echo "Token de admin obtido com sucesso!"
 
 # Cria o realm ms-order
 echo "Criando realm ms-order..."
-curl -s -X POST http://localhost:8080/admin/realms \
+curl -s -X POST http://localhost:33165/admin/realms \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -44,7 +44,7 @@ echo "Realm ms-order criado!"
 
 # Cria o client ms-order-client
 echo "Criando client ms-order-client..."
-curl -s -X POST http://localhost:8080/admin/realms/ms-order/clients \
+curl -s -X POST http://localhost:33165/admin/realms/ms-order/clients \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -62,16 +62,16 @@ curl -s -X POST http://localhost:8080/admin/realms/ms-order/clients \
 echo "Client ms-order-client criado!"
 
 # Obtém o ID do client
-CLIENT_ID=$(curl -s http://localhost:8080/admin/realms/ms-order/clients?clientId=ms-order-client \
+CLIENT_ID=$(curl -s http://localhost:33165/admin/realms/ms-order/clients?clientId=ms-order-client \
   -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[0].id')
 
-CLIENT_SECRET=$(curl -s http://localhost:8080/admin/realms/ms-order/clients?clientId=ms-order-client \
+CLIENT_SECRET=$(curl -s http://localhost:33165/admin/realms/ms-order/clients?clientId=ms-order-client \
   -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[0].secret')
 
 
 # Adiciona os scopes read e write ao client
 echo "Adicionando scopes ao client..."
-curl -s -X PUT http://localhost:8080/admin/realms/ms-order/clients/$CLIENT_ID/default-client-scopes \
+curl -s -X PUT http://localhost:33165/admin/realms/ms-order/clients/$CLIENT_ID/default-client-scopes \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '["openid", "profile", "email", "read", "write"]'
@@ -80,7 +80,7 @@ echo "Scopes adicionados ao client!"
 
 # Cria as roles
 echo "Criando roles..."
-curl -s -X POST http://localhost:8080/admin/realms/ms-order/roles \
+curl -s -X POST http://localhost:33165/admin/realms/ms-order/roles \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -88,7 +88,7 @@ curl -s -X POST http://localhost:8080/admin/realms/ms-order/roles \
     "description": "Usuário padrão"
   }'
 
-curl -s -X POST http://localhost:8080/admin/realms/ms-order/roles \
+curl -s -X POST http://localhost:33165/admin/realms/ms-order/roles \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -100,7 +100,7 @@ echo "Roles criadas!"
 
 # Cria um usuário de teste
 echo "Criando usuário de teste..."
-curl -s -X POST http://localhost:8080/admin/realms/ms-order/users \
+curl -s -X POST http://localhost:33165/admin/realms/ms-order/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -119,15 +119,15 @@ curl -s -X POST http://localhost:8080/admin/realms/ms-order/users \
 echo "Usuário de teste criado!"
 
 # Obtém o ID do usuário
-USER_ID=$(curl -s http://localhost:8080/admin/realms/ms-order/users?username=testuser \
+USER_ID=$(curl -s http://localhost:33165/admin/realms/ms-order/users?username=testuser \
   -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[0].id')
 
 # Obtém o ID da role USER
-ROLE_ID=$(curl -s http://localhost:8080/admin/realms/ms-order/roles \
+ROLE_ID=$(curl -s http://localhost:33165/admin/realms/ms-order/roles \
   -H "Authorization: Bearer $ADMIN_TOKEN" | jq -r '.[] | select(.name=="USER") | .id')
 
 # Atribui a role USER ao usuário
-curl -s -X POST http://localhost:8080/admin/realms/ms-order/users/$USER_ID/role-mappings/realm \
+curl -s -X POST http://localhost:33165/admin/realms/ms-order/users/$USER_ID/role-mappings/realm \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d "[{\"id\":\"$ROLE_ID\",\"name\":\"USER\"}]"
@@ -142,7 +142,7 @@ echo "Username: testuser"
 echo "Password: password123"
 echo ""
 echo "Para obter um token de acesso:"
-echo "curl -X POST http://localhost:8080/realms/ms-order/protocol/openid-connect/token \\"
+echo "curl -X POST http://localhost:33165/realms/ms-order/protocol/openid-connect/token \\"
 echo "  -H \"Content-Type: application/x-www-form-urlencoded\" \\"
 echo "  -d \"grant_type=password\" \\"
 echo "  -d \"client_id=ms-order-client\" \\"
@@ -150,5 +150,5 @@ echo "  -d \"client_secret=$CLIENT_SECRET\" \\"
 echo "  -d \"username=testuser\" \\"
 echo "  -d \"password=password123\""
 echo ""
-echo "Acesse o Keycloak em: http://localhost:8080"
+echo "Acesse o Keycloak em: http://localhost:33165"
 echo "Login: admin/admin" 

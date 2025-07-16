@@ -1,0 +1,25 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: pedidos-user
+  labels:
+    strimzi.io/cluster: my-kraft-cluster
+spec:
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: pedidos
+          patternType: literal
+        operation: Read
+      - resource:
+          type: topic
+          name: pedidos
+          patternType: literal
+        operation: Write
+      - resource:
+          type: group
+          name: pedidos-group
+          patternType: literal
+        operation: Read

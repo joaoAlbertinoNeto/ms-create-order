@@ -11,10 +11,7 @@ import org.springframework.boot.test.mock.mockito.*;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+
 
 import java.time.LocalDateTime;
 
@@ -45,37 +42,34 @@ class OrderControllerSecurityTest {
 
         mockMvc.perform(post("/order/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization",TOKEN)
                 .content(objectMapper.writeValueAsString(orderDTO)))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void testCreateOrderWithUserRole_ShouldReturnOk() throws Exception {
+    @WithMockUser(roles = "USER")
+    void testCreateOrderWithUserRole_ShouldReturnForbidden() throws Exception {
         OrderDTO orderDTO = createTestOrderDTO();
         OrderCreatedDTO createdOrder = createTestOrderCreatedDTO();
-        
+
         when(orderService.createOrder(any(OrderDTO.class))).thenReturn(createdOrder);
 
         mockMvc.perform(post("/order/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(jwt().authorities(() -> "writter"))
                 .content(objectMapper.writeValueAsString(orderDTO)))
-                .andExpect(status().isOk());
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(roles = {"ADMIN"})
+    @WithMockUser(roles = "ADMIN")
     void testCreateOrderWithAdminRole_ShouldReturnOk() throws Exception {
         OrderDTO orderDTO = createTestOrderDTO();
         OrderCreatedDTO createdOrder = createTestOrderCreatedDTO();
-        
+
         when(orderService.createOrder(any(OrderDTO.class))).thenReturn(createdOrder);
 
         mockMvc.perform(post("/order/create")
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(jwt().authorities(() -> "writter"))
                 .content(objectMapper.writeValueAsString(orderDTO)))
                 .andExpect(status().isOk());
     }
@@ -90,7 +84,7 @@ class OrderControllerSecurityTest {
     @WithMockUser(roles = "USER")
     void testGetOrderWithUserRole_ShouldReturnOk() throws Exception {
         OrderCreatedDTO createdOrder = createTestOrderCreatedDTO();
-        
+
         when(orderService.getByOrderId("123")).thenReturn(createdOrder);
 
         mockMvc.perform(get("/order/123"))
@@ -118,4 +112,4 @@ class OrderControllerSecurityTest {
         createdOrder.setOrderLink("http://localhost:8081/order/123");
         return createdOrder;
     }
-} 
+}

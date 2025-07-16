@@ -1,0 +1,77 @@
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ms-create-order-secret
+type: Opaque
+stringData:
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/ms-order"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/ms-order/protocol/openid-connect/certs"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ms-create-order-config
+data:
+  SERVER_PORT: "8081"
+  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_DATA_MONGODB_URI: "mongodb://mongodb:27017/ms-order"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/ms-order"
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/ms-order/protocol/openid-connect/certs"
+  KAFKA_BOOTSTRAP_SERVER: "my-kraft-cluster-kafka-bootstrap:9092"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-create-order
+spec:
+  selector:
+    app: ms-create-order
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30080
+  type: NodePort
+---
+apiVersion: apps/v1                # Define a versão da API do Kubernetes para Deployment
+kind: Deployment                   # Especifica que este recurso é um Deployment
+metadata:                          # Metadados do Deployment
+  name: ms-create-order            # Nome do Deployment
+spec:                              # Especificações do Deployment
+  replicas: 1                      # Número de réplicas (pods) desejadas
+  selector:                        # Seleciona os pods gerenciados por este Deployment
+    matchLabels:
+      app: ms-create-order         # Label usada para identificar os pods
+  template:                        # Template para os pods criados pelo Deployment
+    metadata:
+      labels:
+        app: ms-create-order       # Label aplicada aos pods
+    spec:
+      containers:                  # Lista de containers no pod
+        - name: ms-create-order    # Nome do container
+          image: joaoalbertino/ms-create-order:latest  # Imagem do container, deve ser substituída pela imagem correta
+          imagePullPolicy: Always   # Política de pull da imagem, sempre buscar a última versão
+          env:                     # Variáveis de ambiente para o container
+            - name: SERVER_PORT  # Define o perfil ativo do Spring
+              value: "8080"          # Valor do perfil ativo
+          ports:
+            - containerPort: 8080  # Porta exposta pela aplicação
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          envFrom:  
+            - configMapRef:
+                name: ms-create-order-config
+            - secretRef:
+                name: ms-create-order-secret

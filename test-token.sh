@@ -5,7 +5,7 @@ echo ""
 
 # Obter token
 echo "1. Obtendo token de acesso..."
-TOKEN_RESPONSE=$(curl -s -X POST http://localhost:8080/realms/ms-order/protocol/openid-connect/token \
+TOKEN_RESPONSE=$(curl -s -X POST http://localhost:33165/realms/ms-order/protocol/openid-connect/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "grant_type=password" \
   -d "client_id=ms-order-client" \

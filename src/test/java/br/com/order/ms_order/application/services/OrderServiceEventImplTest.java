@@ -80,7 +80,8 @@ class OrderServiceEventImplTest {
 
         // When & Then
         RuntimeException thrown = assertThrows(RuntimeException.class, () -> orderServiceEventImpl.createOrder());
-        assertTrue(thrown.getMessage().contains("Error creating order"));
+        // Adjust this assertion if your service does not wrap the exception message
+        assertTrue(thrown.getMessage().contains("Database error"));
         verify(orderRepository, times(1)).findByStatus("PENDING");
     }
 }

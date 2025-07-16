@@ -1,0 +1,22 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: my-kraft-cluster
+  namespace: default
+spec:
+  kafka:
+    version: 3.6.0
+    replicas: 1
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+    config:
+      process.roles: "controller,broker"
+      node.id: 0
+      controller.quorum.voters: "0@my-kraft-cluster-kafka-0.my-kraft-cluster-kafka-brokers.default.svc:9093"
+      inter.broker.protocol.version: "3.6"
+      log.message.format.version: "3.6"
+    storage:
+      type: ephemeral
